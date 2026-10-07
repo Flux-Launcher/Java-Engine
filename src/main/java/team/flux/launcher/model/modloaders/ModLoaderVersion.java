@@ -7,7 +7,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Only installation fields are modeled; the complete launch JSON is preserved. */
 public class ModLoaderVersion {
 
     @SerializedName("id")
@@ -61,7 +60,7 @@ public class ModLoaderVersion {
     }
 
     public static class Deserializer implements JsonDeserializer<ModLoaderVersion> {
-        // A plain Gson reads the fields without invoking this adapter recursively.
+
         private final Gson gson = new Gson();
 
         @Override

@@ -19,9 +19,6 @@ import java.util.zip.ZipFile;
 
 import static team.flux.launcher.utils.modutils.commons.InstallerFiles.*;
 
-/**
- * Executes the client profile supplied by a Forge or NeoForge installer.
- */
 public class ModLoaderInstaller {
 
     private static final MyLogger log = new MyLogger(ModLoaderInstaller.class);
@@ -58,7 +55,7 @@ public class ModLoaderInstaller {
                     if (processor.isClient()) runProcessor(processor);
                 }
             }
-            // The launcher uses this file as its installation marker.
+
             writeJson(versionJson, version.getJson());
         } finally {
             try {
@@ -88,7 +85,7 @@ public class ModLoaderInstaller {
         if (entries == null) return;
         for (ModLoaderVersion.Library library : entries) {
             ModLoaderVersion.Artifact artifact = library.downloads == null ? null : library.downloads.artifact;
-            if (artifact == null) continue; // Native classifiers are handled at launch.
+            if (artifact == null) continue;
             String path = artifact.path == null ? coordinateToPath(library.name) : artifact.path;
             File target = safeFile(libraries, path);
             if (valid(target, artifact.sha1)) continue;
@@ -97,7 +94,7 @@ public class ModLoaderInstaller {
             } else if (artifact.url != null && !artifact.url.isEmpty()) {
                 download(new URL(artifact.url), target, artifact.sha1);
             }
-            // An empty URL can describe an artifact that a processor will generate.
+
         }
     }
 

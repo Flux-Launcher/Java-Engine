@@ -15,17 +15,14 @@ public class VersionUtils {
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Date.class, new DateDeserializer()).create();
 
-    /* Retrieve versions list from mojang server */
     public static MojangProduct retrieveVersions() throws IOException {
         return GSON.fromJson(Utils.makeGetRequest(new URL(Main.getVersionsURL())), MojangProduct.class);
     }
 
-    /* Retrieve the version json */
     public static MojangProduct.Game retrieveGame(File file) throws IOException {
         return GSON.fromJson(new String(Files.readAllBytes(file.toPath())), MojangProduct.Game.class);
     }
 
-    /* Search a version by "name" from the version list */
     public static MojangProduct.Version findVersion(MojangProduct data, String name) {
         for (Object version : data.versions.stream().filter(f -> f.id.equalsIgnoreCase(name)).toArray()) {
             return (MojangProduct.Version) version;

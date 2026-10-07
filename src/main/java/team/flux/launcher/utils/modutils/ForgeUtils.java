@@ -13,9 +13,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Fetches Forge's catalog and delegates installation to the shared profile executor.
- */
 public class ForgeUtils {
 
     public static void doForgeSetup(String requested, File jsonFile) throws IOException, InterruptedException {
@@ -39,7 +36,7 @@ public class ForgeUtils {
         for (String full : available) {
             if (!full.startsWith(prefix)) continue;
             String version = full.substring(prefix.length());
-            // Maven can repeat the Minecraft version after the loader build.
+
             if (version.endsWith(suffix)) version = version.substring(0, version.length() - suffix.length());
             if (wanted == null || version.equals(wanted) || version.startsWith(wanted + "."))
                 matches.add(full);

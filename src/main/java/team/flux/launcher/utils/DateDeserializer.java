@@ -14,10 +14,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-/**
- * Deserializes ISO-8601 dates both with and without a UTC offset.
- * Dates without an offset (as found in NeoForge metadata) are treated as UTC.
- */
 public class DateDeserializer implements JsonDeserializer<Date> {
 
     private static final Pattern COMPACT_OFFSET = Pattern.compile("([+-]\\d{2})(\\d{2})$");
@@ -30,7 +26,7 @@ public class DateDeserializer implements JsonDeserializer<Date> {
         try {
             return Date.from(OffsetDateTime.parse(normalizedValue, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toInstant());
         } catch (DateTimeParseException ignored) {
-            // NeoForge dates do not contain an offset, so try the local ISO format below.
+
         }
 
         try {

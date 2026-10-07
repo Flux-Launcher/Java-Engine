@@ -40,20 +40,16 @@ public class ClassloaderLauncher implements ILibraryManager {
     public void launch(List<String> gameargs) throws Exception {
         log.info("Launching game with classloader");
 
-        /* Add all url paths to class loader */
         IsolatedClassloader ucl = new IsolatedClassloader(getPaths().toArray(new URL[getPaths().size()]), ClassLoader.getSystemClassLoader());
         Thread.currentThread().setContextClassLoader(ucl);
         Class<?> c = ucl.loadClass(getGame().mainClass);
 
-        /* Mangle game arguments */
         String[] args = new String[]{};
         String[] concat = Utils.concat(gameargs.toArray(new String[gameargs.size()]), args);
         String[] startArgs = Arrays.copyOfRange(concat, 0, concat.length);
 
-        /* Method Handle instead of reflection, to make compatible with jre higher than 8 */
         MethodHandle mainMethodHandle = MethodHandles.lookup().findStatic(c, "main", MethodType.methodType(void.class, String[].class));
 
-        /* Invoke the main with the given arguments */
         try {
             log.debug(String.format("Invoking: %s", c.getName()));
             mainMethodHandle.invokeExact(startArgs);
@@ -62,9 +58,6 @@ public class ClassloaderLauncher implements ILibraryManager {
         }
     }
 
-    /**
-     * Loads game dependencies before delegating to the launcher classloader.
-     */
     private static final class IsolatedClassloader extends URLClassLoader {
 
         private static final Set<String> PARENT_FIRST = new HashSet<>(Arrays.asList("java.", "javax.", "sun.", "com.sun.", "jdk.", "team.flux."));

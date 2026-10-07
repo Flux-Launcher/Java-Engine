@@ -19,9 +19,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-/**
- * JSON and artifact I/O shared by modloader discovery and installation.
- */
 public final class InstallerFiles {
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(ModLoaderVersion.class, new ModLoaderVersion.Deserializer()).create();
@@ -62,7 +59,7 @@ public final class InstallerFiles {
     public static File downloadInstaller(URL url, String coordinate, String sha1) throws IOException {
         File cache = new File(System.getProperty("java.io.tmpdir"), "flux-installers");
         File installer = safeFile(cache, coordinateToPath(coordinate));
-        // Reuse only an installer whose expected checksum is known and verified.
+
         if (sha1 == null || sha1.isEmpty() || !valid(installer, sha1)) download(url, installer, sha1);
         return installer;
     }
@@ -154,11 +151,6 @@ public final class InstallerFiles {
         }
     }
 
-    /**
-     * Atomically publishes a completed file when possible. Some Windows file
-     * providers report AccessDeniedException for an atomic replacement even
-     * though the regular replacement is allowed, so keep a safe fallback.
-     */
     private static void moveIntoPlace(Path temporary, Path target) throws IOException {
         IOException lastFailure = null;
         for (int attempt = 1; attempt <= 5; attempt++) {

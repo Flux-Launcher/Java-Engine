@@ -4,7 +4,6 @@ import team.flux.launcher.Launcher;
 import team.flux.launcher.logging.MyLogger;
 import team.flux.launcher.model.LauncherVariables;
 
-
 public class Vanilla {
 
     private static final MyLogger log = new MyLogger(Vanilla.class);

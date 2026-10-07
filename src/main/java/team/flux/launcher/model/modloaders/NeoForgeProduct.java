@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** The public NeoForge Maven catalog supplies artifact versions. */
 public class NeoForgeProduct {
     @SerializedName("versions")
     public List<String> versions;
@@ -33,11 +32,6 @@ public class NeoForgeProduct {
             return "net.neoforged:" + artifact + ":" + version + ":installer";
         }
 
-        /**
-         * Published builds use either minor.patch.build or major.minor.patch.build.
-         * A missing Minecraft patch is zero. These prefixes only narrow the candidates;
-         * the install profile supplies the Minecraft version used for the final check.
-         */
         public boolean mayTarget(String requested) {
             if (minecraft != null) return minecraft.equals(requested);
             String[] parts = requested.split("\\.");

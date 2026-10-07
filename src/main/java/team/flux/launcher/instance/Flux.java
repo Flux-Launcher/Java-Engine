@@ -36,7 +36,6 @@ public class Flux {
         }
         FluxProduct prods = gson.fromJson(jsonResponse, FluxProduct.class);
 
-        // Split version string
         String[] split = version.split("-");
 
         FluxProduct.Product fluxProduct = null;

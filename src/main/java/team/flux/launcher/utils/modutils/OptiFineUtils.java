@@ -23,7 +23,6 @@ public class OptiFineUtils {
 
     private static final JSONParser jsonParser = new JSONParser();
 
-    /* Extract optifine library name from optifine json */
     public static JSONArray getOptifineModList(File jsonFile) throws IOException, ParseException {
         FileReader OptifineReader = new FileReader(jsonFile);
         JSONObject OptifineJsonObject = (JSONObject) jsonParser.parse(OptifineReader);
@@ -40,25 +39,21 @@ public class OptiFineUtils {
     }
 
     public static void doOptifineSetup(String mcVersion, File jsonFile) throws IOException, ParseException, InterruptedException {
-        /* Fetch optifine versions */
+
         String ofVersionList = Utils.makeGetRequest(new URL(Main.getOptifineVersionsURL()));
 
-        /* Setup json parsing */
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(ofVersionList);
 
-        /* Iterate optifine game versions */
         for (Object key : jsonObject.keySet()) {
             String versionKey = (String) key;
-            /* Find the correct game version for optifine */
+
             if (mcVersion.split("-")[0].equals(versionKey)) {
                 JSONObject versionList = (JSONObject) jsonObject.get(versionKey);
 
-                /* Prepare optifine installer url */
                 URL ofInstallerURL = new URL(String.format("%s/downloads/extra-optifine/%s.jar", Main.getFluxAPI(), versionList.get("name")));
                 File ofInstallerFile = new File(String.format("%s/%s.jar", System.getProperty("java.io.tmpdir"), versionList.get("name")));
 
-                /* Download optifine installer into temp folder */
                 if (!ofInstallerFile.exists()) {
                     ParallelTasks tasks = new ParallelTasks();
                     tasks.add(new DownloadFileTask(ofInstallerURL, ofInstallerFile.getPath()));
@@ -67,24 +62,19 @@ public class OptiFineUtils {
 
                 ZipFile ofInstallerZip = new ZipFile(ofInstallerFile);
 
-                /* Some code for optifine folders and file names */
                 String ofVer = getOptiFineVersion(ofInstallerZip);
                 String[] ofVers = tokenize(ofVer, "_");
                 String mcVer = ofVers[1];
                 String ofEd = getOptiFineEdition(ofVers);
 
-                /* Make optifine library folder */
                 File ofLibraryPath = new File(String.format("%s/libraries/optifine/OptiFine/%s_%s", Launcher.env.getGameFolder(), mcVer, ofEd));
                 if (!ofLibraryPath.exists()) ofLibraryPath.mkdirs();
 
-                /* Copy optifine library to libraries folder */
                 File ofLibraryFile = new File(String.format("%s/OptiFine-%s_%s.jar", ofLibraryPath, mcVer, ofEd));
                 copyFile(ofInstallerFile, ofLibraryFile);
 
-                /* Retrieve launchwrapper version from txt */
                 String launchwrapperVersion = getLaunchwrapperVersion(ofInstallerZip.getInputStream(ofInstallerZip.getEntry("launchwrapper-of.txt")));
 
-                /* Build launchwrapper target folder */
                 File launchwrapperPath = new File(String.format("%s/libraries/optifine/launchwrapper-of/%s", Launcher.env.getGameFolder(), launchwrapperVersion));
                 if (!launchwrapperPath.exists()) launchwrapperPath.mkdirs();
                 String launchwrapperFileName = String.format("launchwrapper-of-%s.jar", launchwrapperVersion);
@@ -99,7 +89,6 @@ public class OptiFineUtils {
                     fout.close();
                 }
 
-                /* Download the vanilla json if absent */
                 MojangProduct.Version ver = VersionUtils.findVersion(Launcher.env.getVanilla(), mcVer);
                 File vanillaJsonPath = new File(String.format("%s/versions/%s", Launcher.env.getGameFolder(), ver.id));
                 if (!vanillaJsonPath.exists()) vanillaJsonPath.mkdirs();

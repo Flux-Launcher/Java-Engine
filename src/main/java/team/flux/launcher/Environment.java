@@ -11,8 +11,8 @@ public class Environment {
     private File gameFolder, assetsFolder;
     private MojangProduct vanilla;
     private MojangProduct.Version target;
-    private MojangProduct.Game game; // Vanilla / Optifine / Fabric / Forge
-    private MojangProduct.Game inherited; // just Vanilla (is parent of modloader)
+    private MojangProduct.Game game;
+    private MojangProduct.Game inherited;
     private FluxProduct.Product flux;
     private LauncherVariables variables;
 

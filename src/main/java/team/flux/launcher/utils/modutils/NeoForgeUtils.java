@@ -14,15 +14,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Resolves published NeoForge artifacts, then checks the installer's Minecraft version.
- */
 public class NeoForgeUtils {
 
     public static void doNeoForgeSetup(String requested, File jsonFile) throws IOException, InterruptedException {
         LoaderVersions.Request request = LoaderVersions.parse(requested, "neoforge");
         List<NeoForgeProduct.Release> candidates = new ArrayList<>();
-        // Both Maven artifact names are published by NeoForge; each supplies its own catalog.
+
         String[] artifactList = new String[]{"forge", "neoforge"};
         for (String artifact : artifactList) {
             NeoForgeProduct catalog = InstallerFiles.readJson(new URL(Main.getNeoForgeVersionsURL() + artifact), NeoForgeProduct.class);

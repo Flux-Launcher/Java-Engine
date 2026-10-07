@@ -19,24 +19,21 @@ public class OptiForgeUtils {
     private static final JSONParser jsonParser = new JSONParser();
 
     public static void doOptiForgeSetup(String mcVersion, File jsonFile) throws IOException, ParseException, InterruptedException {
-        /* Install optifine */
+
         doOptifineSetup(mcVersion, jsonFile);
 
-        /* Make the modlist json */
         String modlistName = String.format("tempModList-%s.json", mcVersion);
         File modlistFile = new File(String.format("%s/%s", Launcher.env.getGameFolder(), modlistName));
         JSONObject optiJsonObject = new JSONObject();
         optiJsonObject.put("repositoryRoot", String.format("%s/libraries", Launcher.env.getGameFolder()));
-        optiJsonObject.put("modRef", getOptifineModList(jsonFile));  // Qui usiamo l'array modRefArray che abbiamo popolato sopra
+        optiJsonObject.put("modRef", getOptifineModList(jsonFile));
         FileWriter file = new FileWriter(modlistFile);
         file.write(optiJsonObject.toJSONString());
         file.flush();
         file.close();
 
-        /* Install forge */
         doForgeSetup(mcVersion, jsonFile);
 
-        /* Do json patches */
         FileReader reader = new FileReader(jsonFile);
         JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
         jsonObject.replace("minecraftArguments", jsonObject.get("minecraftArguments"), String.format("%s --modListFile %s", jsonObject.get("minecraftArguments"), modlistName));

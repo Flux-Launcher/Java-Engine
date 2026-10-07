@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Client installation instructions supplied by Forge and NeoForge installers. */
 public class InstallerProfile {
 
     @SerializedName("minecraft")
@@ -24,7 +23,7 @@ public class InstallerProfile {
     public List<ModLoaderVersion.Library> libraries = new ArrayList<>();
     @SerializedName("data")
     public Map<String, Data> data = new LinkedHashMap<>();
-    // An empty list still describes a processor-based installer; null is the legacy format.
+
     @SerializedName("processors")
     public List<Processor> processors;
 

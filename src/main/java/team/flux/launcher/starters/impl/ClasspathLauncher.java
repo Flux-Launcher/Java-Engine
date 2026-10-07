@@ -45,48 +45,43 @@ public class ClasspathLauncher implements ILibraryManager {
     public void launch(List<String> gameargs) throws Exception {
         log.info("Launching game with classpath");
 
-        /* Append all libraries to class path */
         StringBuilder classPath = new StringBuilder();
         for (URL path : getPaths()) {
             classPath.append(new File(path.toURI()).getPath()).append(separator);
         }
 
-        /* Start the children process (game) */
         Process process = getProcessBuilder(classPath, gameargs).start();
 
-        /* Forward the output from children process into parent process */
         new Thread(() -> processInputStream(process)).start();
         new Thread(() -> processErrorStream(process)).start();
     }
 
     private ProcessBuilder getProcessBuilder(StringBuilder classPath, List<String> gameargs) {
-        /* Get java executable */
+
         List<String> command = new ArrayList<>();
         command.add(String.format("%s/bin/java", System.getProperty("java.home")));
         if (startOnFirstThread) command.add("-XstartOnFirstThread");
 
-        /* Java agent passtrough to children process */
         for (String agent : getActiveJavaAgents()) command.add(agent);
 
-        /* Set various natives paths */
         String libraryPath = System.getProperty("java.library.path");
 
         if (vanilla.arguments != null && vanilla.arguments.jvm != null) {
-            /* Setup vanilla args */
+
             for (Object o : vanilla.arguments.jvm) {
-                String arg = o.toString().replace("${natives_directory}", libraryPath) /* Natives directory (.minecraft/versions/<version>/natives) */.replace("${classpath}", classPath).replace("${launcher_name}", Main.name).replace("${launcher_version}", Main.version);
+                String arg = o.toString().replace("${natives_directory}", libraryPath) .replace("${classpath}", classPath).replace("${launcher_name}", Main.name).replace("${launcher_version}", Main.version);
                 if (arg.contains("{rules=[{")) continue;
                 command.add(arg);
             }
-            /* Append modloader args */
+
             if (!getGame().equals(vanilla) && getGame() != null && getGame().arguments != null && getGame().arguments.jvm != null) {
                 for (Object o : getGame().arguments.jvm) {
-                    String arg = o.toString().replace("${version_name}", getGame().id) /* Forge version name */.replace("${classpath_separator}", Character.toString(separator)).replace("${library_directory}", String.format("%s/libraries", Launcher.env.getGameFolder().getPath())); /* .minecraft/libraries */
+                    String arg = o.toString().replace("${version_name}", getGame().id) .replace("${classpath_separator}", Character.toString(separator)).replace("${library_directory}", String.format("%s/libraries", Launcher.env.getGameFolder().getPath()));
                     command.add(arg);
                 }
             }
         } else {
-            /* Fallback for older versions */
+
             command.add(String.format("-Djava.library.path=%s", libraryPath));
             command.add(String.format("-Djna.tmpdir=%s", libraryPath));
             command.add(String.format("-Dorg.lwjgl.system.SharedLibraryExtractPath=%s", libraryPath));
@@ -94,10 +89,10 @@ public class ClasspathLauncher implements ILibraryManager {
             command.add("-cp");
             command.add(classPath.toString());
         }
-        command.add(getGame().mainClass); /* Entry point of our game */
-        command.addAll(gameargs); /* Arguments of the game (from json) */
+        command.add(getGame().mainClass);
+        command.addAll(gameargs);
 
-        return new ProcessBuilder(command); /* Make process builder instance */
+        return new ProcessBuilder(command);
     }
 
     private void processInputStream(Process process) {

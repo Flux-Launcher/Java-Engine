@@ -29,9 +29,6 @@ public final class LoaderVersions {
         return Collections.max(candidates, LoaderVersions::compare);
     }
 
-    /**
-     * Numeric components sort numerically; release builds sort after their qualifiers.
-     */
     public static int compare(String left, String right) {
         String[] a = left.split("[.-]");
         String[] b = right.split("[.-]");
@@ -41,7 +38,7 @@ public final class LoaderVersions {
             int result = a[i].matches("\\d+") && b[i].matches("\\d+") ? new BigInteger(a[i]).compareTo(new BigInteger(b[i])) : a[i].compareTo(b[i]);
             if (result != 0) return result;
         }
-        // Equivalent numeric spellings still have a stable order.
+
         return left.compareTo(right);
     }
 

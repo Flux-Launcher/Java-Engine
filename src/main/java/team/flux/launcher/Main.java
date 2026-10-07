@@ -23,7 +23,6 @@ public class Main {
     public static Flux getFlux() { return flux; }
     public static MojangSession getMojangSession() { return mojangSession; }
 
-    // NOTE: it's important to set -Djava.library.path by giving natives path, else the game won't start!
     public static void main(String[] args) throws Exception {
         MyLogger.installGlobalExceptionHandler();
         log.info(String.format("%s Launcher (%s | %s) | jwwzr333", name, version, build));
@@ -43,23 +42,22 @@ public class Main {
         String gameFolder = cmd.hasOption(var8) ? cmd.getOptionValue(var8) : OSUtils.getWorkingDirectory("minecraft").getPath();
 
         if (cmd.getOptionValue(var3) != null && cmd.getOptionValue(var4) != null && cmd.getOptionValue(var5) != null) {
-            /* Setup minecraft session */
+
             mojangSession = new MojangSession(cmd.getOptionValue(var4), cmd.getOptionValue(var3), cmd.getOptionValue(var5));
 
-            /* Select operative mode */
             if (cmd.getOptionValue(var2) != null) {
                 String version = cmd.getOptionValue(var2);
 
                 if (version.startsWith("flux")) {
-                    // Setup flux client
+
                     (flux = new Flux(version, cmd.hasOption(var9))).prepareLaunch(gameFolder);
                 } else {
-                    // Setup vanilla/modded client
+
                     (vanilla = new Vanilla(version, cmd.hasOption(var7), cmd.hasOption(var9))).prepareLaunch(gameFolder);
                 }
             }
         } else {
-            /* Print Help */
+
             printHelp(options);
         }
     }
@@ -73,34 +71,30 @@ public class Main {
         System.out.println("\nCheck website for more details: https://fluxlauncher.xyz\n");
     }
 
-    /* ----- Vanilla ----- */
-    public static String getVersionsURL() { /* vanilla versions list */
+    public static String getVersionsURL() {
         return "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     }
 
-    public static String getAssetsURL() { /* vanilla game assets */
+    public static String getAssetsURL() {
         return "https://resources.download.minecraft.net";
     }
 
-    public static String getLibrariesURL() { /* vanilla game libraries */
+    public static String getLibrariesURL() {
         return "https://libraries.minecraft.net";
     }
 
-    /* ----- Fabric ----- */
-    public static String getFabricVersionsURL() { /* fabric versions list */
+    public static String getFabricVersionsURL() {
         return "https://meta.fabricmc.net/v2/versions";
     }
 
-    /* ----- Forge ----- */
-    public static String getForgeVersionsURL() { /* forge versions list */
+    public static String getForgeVersionsURL() {
         return "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
     }
 
-    public static String getForgeInstallerURL() { /* forge installer base url */
+    public static String getForgeInstallerURL() {
         return "https://maven.minecraftforge.net/net/minecraftforge/forge/";
     }
 
-    /* ----- NeoForge ----- */
     public static String getNeoForgeURL() {
         return "https://maven.neoforged.net";
     }
@@ -113,12 +107,10 @@ public class Main {
         return String.format("%s/api/maven/versions/releases/net/neoforged/", getNeoForgeURL());
     }
 
-    /* ----- OptiFine ----- */
     public static String getOptifineVersionsURL() {
         return String.format("%s/downloads/optifine.json", getFluxAPI());
     }
 
-    /* ----- Flux ----- */
     public static String getFluxAPI() {
         return "https://fluxlauncher.xyz";
     }

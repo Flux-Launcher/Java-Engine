@@ -82,10 +82,10 @@ public class MojangProduct {
         public String type;
 
         @SerializedName("arguments")
-        public Arguments arguments; // latest
+        public Arguments arguments;
 
         @SerializedName("minecraftArguments")
-        public String minecraftArguments; // legacy
+        public String minecraftArguments;
 
         public class Arguments {
 
@@ -219,7 +219,6 @@ public class MojangProduct {
             public String name;
         }
 
-        // Legacy stuff
         public class Classifiers {
 
             @SerializedName("natives-linux")
