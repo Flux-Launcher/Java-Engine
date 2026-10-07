@@ -1,0 +1,136 @@
+package team.flux.launcher.starters.impl;
+
+import team.flux.launcher.Launcher;
+import team.flux.launcher.Main;
+import team.flux.launcher.logging.MyLogger;
+import team.flux.launcher.model.products.MojangProduct;
+import team.flux.launcher.starters.ILibraryManager;
+import team.flux.launcher.utils.OSUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClasspathLauncher implements ILibraryManager {
+
+    private final MyLogger log = new MyLogger(ClasspathLauncher.class);
+    private final MojangProduct.Game game, vanilla;
+    private final List<URL> paths;
+    private final boolean startOnFirstThread;
+    private char separator;
+
+    public ClasspathLauncher(MojangProduct.Game game, MojangProduct.Game vanilla, List<URL> paths, boolean startOnFirstThread) {
+        this.game = game;
+        this.vanilla = vanilla;
+        this.paths = paths;
+        this.startOnFirstThread = startOnFirstThread;
+        this.separator = OSUtils.getPlatform().equals(OSUtils.OS.windows) ? ';' : ':';
+    }
+
+    @Override
+    public MojangProduct.Game getGame() {
+        return game;
+    }
+
+    @Override
+    public List<URL> getPaths() {
+        return paths;
+    }
+
+    @Override
+    public void launch(List<String> gameargs) throws Exception {
+        log.info("Launching game with classpath");
+
+        /* Append all libraries to class path */
+        StringBuilder classPath = new StringBuilder();
+        for (URL path : getPaths()) {
+            classPath.append(new File(path.toURI()).getPath()).append(separator);
+        }
+
+        /* Start the children process (game) */
+        Process process = getProcessBuilder(classPath, gameargs).start();
+
+        /* Forward the output from children process into parent process */
+        new Thread(() -> processInputStream(process)).start();
+        new Thread(() -> processErrorStream(process)).start();
+    }
+
+    private ProcessBuilder getProcessBuilder(StringBuilder classPath, List<String> gameargs) {
+        /* Get java executable */
+        List<String> command = new ArrayList<>();
+        command.add(String.format("%s/bin/java", System.getProperty("java.home")));
+        if (startOnFirstThread) command.add("-XstartOnFirstThread");
+
+        /* Java agent passtrough to children process */
+        for (String agent : getActiveJavaAgents()) command.add(agent);
+
+        /* Set various natives paths */
+        String libraryPath = System.getProperty("java.library.path");
+
+        if (vanilla.arguments != null && vanilla.arguments.jvm != null) {
+            /* Setup vanilla args */
+            for (Object o : vanilla.arguments.jvm) {
+                String arg = o.toString().replace("${natives_directory}", libraryPath) /* Natives directory (.minecraft/versions/<version>/natives) */.replace("${classpath}", classPath).replace("${launcher_name}", Main.name).replace("${launcher_version}", Main.version);
+                if (arg.contains("{rules=[{")) continue;
+                command.add(arg);
+            }
+            /* Append modloader args */
+            if (!getGame().equals(vanilla) && getGame() != null && getGame().arguments != null && getGame().arguments.jvm != null) {
+                for (Object o : getGame().arguments.jvm) {
+                    String arg = o.toString().replace("${version_name}", getGame().id) /* Forge version name */.replace("${classpath_separator}", Character.toString(separator)).replace("${library_directory}", String.format("%s/libraries", Launcher.env.getGameFolder().getPath())); /* .minecraft/libraries */
+                    command.add(arg);
+                }
+            }
+        } else {
+            /* Fallback for older versions */
+            command.add(String.format("-Djava.library.path=%s", libraryPath));
+            command.add(String.format("-Djna.tmpdir=%s", libraryPath));
+            command.add(String.format("-Dorg.lwjgl.system.SharedLibraryExtractPath=%s", libraryPath));
+            command.add(String.format("-Dio.netty.native.workdir=%s", libraryPath));
+            command.add("-cp");
+            command.add(classPath.toString());
+        }
+        command.add(getGame().mainClass); /* Entry point of our game */
+        command.addAll(gameargs); /* Arguments of the game (from json) */
+
+        return new ProcessBuilder(command); /* Make process builder instance */
+    }
+
+    private void processInputStream(Process process) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) System.out.println(line);
+        } catch (Exception e) {
+            log.error("Cannot read game standard output", e);
+        }
+    }
+
+    private void processErrorStream(Process process) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) System.err.println(line);
+        } catch (Exception e) {
+            log.error("Cannot read game error output", e);
+        }
+    }
+
+    private List<String> getActiveJavaAgents() {
+        List<String> agents = new ArrayList<>();
+        try {
+            List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+            for (String arg : inputArguments) {
+                if (arg.startsWith("-javaagent:") && !arg.contains("debugger-agent.jar")) {
+                    log.info("Detected agent to passthrough: " + arg);
+                    agents.add(arg);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Cannot inspect active Java agents", e);
+        }
+        return agents;
+    }
+}
